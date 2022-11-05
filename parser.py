@@ -1,15 +1,13 @@
-from ast import Delete
-from typing import List
-from scheme import Goods, Positions, Orders
-from run import session
-from datetime import datetime
-
 import logging
 import os.path
-from time import sleep
-from googleapiclient.discovery import build
+from datetime import datetime
+from typing import List
+
 from google.oauth2 import service_account
-import datetime as dt
+from googleapiclient.discovery import build
+
+from run import session
+from scheme import Goods, Orders, Positions
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -99,6 +97,13 @@ def get_rows_from_google_sheet(range_name, spreadsheet_id):
     return values
 
 
+def get_value_from_row_or_zero(row, index):
+    try:
+        return int(row[index])
+    except Exception:
+        return 0
+
+
 def parse_orders(rows) -> List[Orders]:
     orders = []
     for row in rows:
@@ -113,15 +118,8 @@ def parse_orders(rows) -> List[Orders]:
                 order.date = datetime.now().replace(day=day).date()
                 order.created_at = datetime.now()
                 order.updated_at = datetime.now()
-                try:
-                    order.fbs_count = int(row[position_for_place-1])
-                except:
-                    order.fbs_count = 0
-                try:
-                    print(int(row[position_for_place]))
-                    order.fbo_count = int(row[position_for_place])
-                except:
-                    order.fbo_count = 0
+                order.fbs_count = get_value_from_row_or_zero(row, position_for_place - 1)
+                order.fbo_count = get_value_from_row_or_zero(row, position_for_place)
                 orders.append(order)
         except Exception as e:
             logging.error(e, exc_info=True)
@@ -131,8 +129,6 @@ def parse_orders(rows) -> List[Orders]:
 def update_orders(orders: List[Orders]):
     for order in orders:
         order_from_db = session.query(Orders).filter_by(sku=int(order.sku), date=order.date).first()
-        # print(order_from_db.date)
-        # print(order_from_db)
         if order_from_db is None:
             session.add(order)
         else:

@@ -1,8 +1,5 @@
-from stat import FILE_ATTRIBUTE_ARCHIVE
-from sqlalchemy import create_engine
-from sqlalchemy import Table, Column, Integer, String, MetaData, ForeignKey, TIMESTAMP, Float, Date
-from sqlalchemy.orm import mapper, sessionmaker 
 
+from sqlalchemy import TIMESTAMP, Column, Date, Float, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -16,7 +13,7 @@ class BaseModel(Base):
     updated_at = Column(TIMESTAMP, nullable=False)
 
     def __repr__(self):
-        return "<{0.__class__.__name__}(id={0.id!r})>".format(self)
+        return '<{0.__class__.__name__}(id={0.id!r})>'.format(self)
 
 
 class Goods(BaseModel):
@@ -29,6 +26,7 @@ class Goods(BaseModel):
     price_after_spp = Column(Float, nullable=False)
     brand = Column(String(255), nullable=True)
     owner = Column(String(255), nullable=False)
+
 
 class Positions(BaseModel):
     __tablename__ = 'positions'
@@ -56,4 +54,3 @@ class Barcodes(BaseModel):
     barcode = Column(String(255), nullable=False, unique=True)
     size = Column(String(255), nullable=False)
     color = Column(String(255), nullable=False)
-
